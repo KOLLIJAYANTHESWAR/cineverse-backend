@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema(
       trim: true,
       unique: true,
       index: true,
+      minlength: 3,
+      maxlength: 30,
     },
 
     email: {
@@ -18,12 +20,14 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       index: true,
+      lowercase: true, // ✅ prevents Email vs email duplicates
+      trim: true,
     },
 
     password: {
       type: String,
       required: true,
-      select: false, // 🔐 never return password by default
+      select: false, // 🔐 never exposed in queries
     },
 
     avatar: {
@@ -41,10 +45,40 @@ const userSchema = new mongoose.Schema(
     isBanned: {
       type: Boolean,
       default: false,
+      index: true,
     },
 
     // ===============================
-    // SOCIAL (FRIENDS & DMs)
+    // EMAIL VERIFICATION
+    // ===============================
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    emailVerificationToken: {
+      type: String,
+      index: true,
+    },
+
+    emailVerificationExpires: {
+      type: Date,
+    },
+    // ===============================
+    // 🔐 PASSWORD RESET
+    // ===============================
+    passwordResetToken: {
+      type: String,
+    },
+
+    passwordResetExpires: {
+      type: Date,
+    },
+
+
+    // ===============================
+    // SOCIAL
     // ===============================
     friends: [
       {
@@ -68,7 +102,7 @@ const userSchema = new mongoose.Schema(
     ],
 
     // ===============================
-    // TASTE PROFILE (FOR ML)
+    // TASTE PROFILE (ML READY)
     // ===============================
     likedMovies: [
       {
@@ -89,7 +123,17 @@ const userSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
+
+// ===============================
+// INDEX SAFETY (PRODUCTION)
+// ===============================
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
+
 export default mongoose.model("User", userSchema);
+
