@@ -35,3 +35,12 @@ export const chatLimiter = rateLimit({
     message: "You are sending messages too fast.",
   },
 });
+// shared/middlewares/rateLimit.middleware.js
+export const userLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  message: {
+    success: false,
+    message: "Too many user requests. Please slow down.",
+  },
+});

@@ -25,6 +25,7 @@ import healthRoutes from "./routes/health.routes.js";
 import {
   authLimiter,
   apiLimiter,
+  userLimiter,
 } from "./shared/middlewares/rateLimit.middleware.js";
 
 const router = express.Router();
@@ -45,7 +46,7 @@ router.use("/posts", apiLimiter, postRoutes);
 router.use("/health", healthRoutes);
 
 // 👤 USER / SOCIAL
-router.use("/users", userRoutes);
+router.use("/users", userLimiter, userRoutes);
 router.use("/users/friends", friendRoutes);
 
 // 💬 CHAT (socket spam handled later with Redis)
