@@ -65,6 +65,7 @@ const userSchema = new mongoose.Schema(
     emailVerificationExpires: {
       type: Date,
     },
+
     // ===============================
     // 🔐 PASSWORD RESET
     // ===============================
@@ -75,7 +76,6 @@ const userSchema = new mongoose.Schema(
     passwordResetExpires: {
       type: Date,
     },
-
 
     // ===============================
     // SOCIAL
@@ -128,12 +128,4 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-
-// ===============================
-// INDEX SAFETY (PRODUCTION)
-// ===============================
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
-
 export default mongoose.model("User", userSchema);
-
