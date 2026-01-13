@@ -15,10 +15,11 @@ import {
   verifyEmailTemplate,
   resetPasswordTemplate,
 } from "../../shared/services/email.templates.js";
+import { env } from "../../config/env.js";
 
-// ===============================
-// REGISTER
-// ===============================
+/* ===============================
+   REGISTER
+   =============================== */
 export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -44,12 +45,12 @@ export const register = async (req, res) => {
       password,
     });
 
-    const verifyLink = `${process.env.FRONTEND_URL}/verify-email/${verificationToken}`;
+    const verifyLink = `${env.frontendUrl}/verify-email/${verificationToken}`;
 
     // 📧 SEND VERIFICATION EMAIL
     await sendEmail({
       to: user.email,
-      subject: "Verify your CineVerse account",
+      subject: "Verify your Cinevraix account",
       html: verifyEmailTemplate(verifyLink),
     });
 
@@ -65,9 +66,9 @@ export const register = async (req, res) => {
   }
 };
 
-// ===============================
-// LOGIN
-// ===============================
+/* ===============================
+   LOGIN
+   =============================== */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -101,9 +102,9 @@ export const login = async (req, res) => {
   }
 };
 
-// ===============================
-// VERIFY EMAIL
-// ===============================
+/* ===============================
+   VERIFY EMAIL
+   =============================== */
 export const verifyEmail = async (req, res) => {
   const hashedToken = crypto
     .createHash("sha256")
@@ -132,9 +133,9 @@ export const verifyEmail = async (req, res) => {
   });
 };
 
-// ===============================
-// RESEND VERIFICATION
-// ===============================
+/* ===============================
+   RESEND VERIFICATION
+   =============================== */
 export const resendVerification = async (req, res) => {
   try {
     const { email } = req.body;
@@ -148,11 +149,12 @@ export const resendVerification = async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    if (!user)
+    if (!user) {
       return errorResponse(res, {
         statusCode: 404,
         message: "User not found",
       });
+    }
 
     if (user.isEmailVerified) {
       return successResponse(res, {
@@ -165,11 +167,11 @@ export const resendVerification = async (req, res) => {
     user.emailVerificationExpires = Date.now() + 60 * 60 * 1000;
     await user.save();
 
-    const verifyLink = `${process.env.FRONTEND_URL}/verify-email/${token}`;
+    const verifyLink = `${env.frontendUrl}/verify-email/${token}`;
 
     await sendEmail({
       to: user.email,
-      subject: "Verify your CineVerse account",
+      subject: "Verify your Cinevraix account",
       html: verifyEmailTemplate(verifyLink),
     });
 
@@ -184,9 +186,9 @@ export const resendVerification = async (req, res) => {
   }
 };
 
-// ===============================
-// FORGOT PASSWORD
-// ===============================
+/* ===============================
+   FORGOT PASSWORD
+   =============================== */
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -204,11 +206,11 @@ export const forgotPassword = async (req, res) => {
   user.passwordResetExpires = Date.now() + 60 * 60 * 1000;
   await user.save();
 
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+  const resetLink = `${env.frontendUrl}/reset-password/${token}`;
 
   await sendEmail({
     to: user.email,
-    subject: "Reset your CineVerse password",
+    subject: "Reset your Cinevraix password",
     html: resetPasswordTemplate(resetLink),
   });
 
@@ -217,9 +219,9 @@ export const forgotPassword = async (req, res) => {
   });
 };
 
-// ===============================
-// RESET PASSWORD
-// ===============================
+/* ===============================
+   RESET PASSWORD
+   =============================== */
 export const resetPassword = async (req, res) => {
   if (!req.body.password || req.body.password.length < 8) {
     return errorResponse(res, {
@@ -238,11 +240,12 @@ export const resetPassword = async (req, res) => {
     passwordResetExpires: { $gt: Date.now() },
   });
 
-  if (!user)
+  if (!user) {
     return errorResponse(res, {
       statusCode: 400,
       message: "Invalid or expired reset token",
     });
+  }
 
   user.password = await bcrypt.hash(req.body.password, 10);
   user.passwordResetToken = undefined;
